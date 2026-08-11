@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clearwater Way — Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #04546f;
+    --bg-deep: #033f54;
+    --card: #0b6483;
+    --cream: #fceed4;
+    --ink: #04546f;
+    --muted: #bcd8e2;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg);
+    color:var(--cream);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:64px 20px 80px;
+  }
+  .wrap{width:100%; max-width:780px;}
+
+  header{text-align:center; margin-bottom:48px;}
+  .eyebrow{
+    font-size:0.72rem; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; margin-bottom:14px;
+  }
+  h1{
+    font-family:'Fraunces', serif; font-weight:600;
+    font-size:clamp(2.4rem, 7vw, 3.6rem); color:var(--cream);
+    letter-spacing:-0.01em;
+  }
+  header p{
+    margin-top:14px; color:var(--muted); font-size:1rem; max-width:440px;
+    margin-left:auto; margin-right:auto;
+  }
+
+  /* video preview */
+  .preview{
+    border-radius:16px; overflow:hidden; position:relative; cursor:pointer;
+    box-shadow:0 20px 40px -18px rgba(0,0,0,0.45);
+    border:1px solid rgba(252,238,212,0.15);
+    margin:0 auto 56px;
+    max-width:200px;
+  }
+  .preview img{width:100%; display:block;}
+  .preview::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(3,42,56,0) 55%, rgba(3,42,56,0.65) 100%);
+  }
+  .preview-play{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:2;
+  }
+  .preview-play span{
+    width:72px; height:72px; border-radius:50%; background:rgba(252,238,212,0.95);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .25s ease;
+  }
+  .preview:hover .preview-play span{transform:scale(1.08);}
+  .preview-play svg{width:20px; height:20px; fill:var(--bg-deep); margin-left:3px;}
+  .preview-label{
+    position:absolute; left:20px; bottom:16px; z-index:2; color:var(--cream);
+    font-size:0.85rem; font-weight:500; display:flex; align-items:center; gap:8px;
+  }
+  .preview-label .dot{width:6px; height:6px; border-radius:50%; background:#7fd4a8;}
+
+  /* T&C notice */
+  .notice{
+    background:#fff4de; border:2px solid #e39d3e; border-radius:16px;
+    padding:22px 24px; margin:0 0 24px;
+    box-shadow:0 14px 30px -16px rgba(0,0,0,0.4);
+  }
+  .notice-title{
+    display:flex; align-items:center; gap:9px;
+    font-family:'Fraunces', serif; font-weight:600; font-size:1.15rem;
+    color:#7a4a12; margin-bottom:10px; letter-spacing:-0.01em;
+  }
+  .notice-title svg{width:22px; height:22px; flex-shrink:0;}
+  .notice p{
+    font-size:0.92rem; line-height:1.6; color:#5c3d14;
+  }
+  .notice strong{color:#7a4a12;}
+
+  /* map */
+  .map-card{
+    background:var(--cream); border-radius:20px; padding:36px 30px 30px;
+    box-shadow:0 24px 50px -20px rgba(0,0,0,0.45);
+  }
+  .map-card h2{
+    font-family:'Fraunces', serif; font-weight:600; font-size:1.4rem;
+    color:var(--bg-deep); margin-bottom:4px;
+  }
+  .map-card .sub{font-size:0.85rem; color:#5c7a86; margin-bottom:22px;}
+  svg.map{width:100%; height:auto;}
+  .legend{
+    display:flex; flex-wrap:wrap; gap:10px 20px; margin-top:22px;
+    font-size:0.8rem; color:#4f7080;
+  }
+  .legend span{display:flex; align-items:center; gap:7px;}
+  .legend .sw{width:9px; height:9px; border-radius:50%; display:inline-block;}
+
+  /* modal */
+  .modal{
+    position:fixed; inset:0; background:rgba(3,32,43,0.92);
+    display:none; align-items:center; justify-content:center; z-index:100; padding:24px;
+  }
+  .modal.open{display:flex;}
+  .modal-inner{width:100%; max-width:900px; position:relative;}
+  .modal-inner video{width:100%; border-radius:14px; display:block; background:#000;}
+  .modal-bar{
+    position:absolute; top:-46px; left:0; right:0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .lang-select{
+    font-family:'Inter', sans-serif; font-size:0.8rem; color:var(--cream);
+    background:rgba(252,238,212,0.08); border:1px solid rgba(252,238,212,0.3);
+    border-radius:100px; padding:8px 14px; cursor:pointer;
+  }
+  .lang-select option{color:#1f3b45;}
+  .modal-close{
+    background:none; border:none;
+    color:var(--cream); font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:8px;
+  }
+  .modal-close span{
+    width:26px; height:26px; border-radius:50%; border:1px solid rgba(252,238,212,0.4);
+    display:flex; align-items:center; justify-content:center;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Genting Nature Adventures</div>
+    <h1>Clearwater Way</h1>
+    <p>A quick look at the trail; watch the preview, then check the route below.</p>
+  </header>
+
+  <div class="preview" onclick="openVideo()">
+    <img src="video_poster.png" alt="Clearwater Way trail preview">
+    <div class="preview-play"><span><svg viewBox="0 0 24 24"><path d="M4 2 L22 12 L4 22 Z"/></svg></span></div>
+    <div class="preview-label"><span class="dot"></span>Watch the trail preview</div>
+  </div>
+
+  <div class="notice">
+    <div class="notice-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7a4a12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Terms &amp; Conditions
+    </div>
+    <p>
+      Guests are guaranteed to reach <strong>Lost Falls</strong> as part of every trail experience.
+      However, continuing on to <strong>Fishtail Falls</strong> is subject to prevailing weather and climate conditions on the day.
+      For visitor safety, our rangers reserve the right to end the trail at Lost Falls and not proceed to Fishtail Falls if conditions are deemed unsafe.
+    </p>
+  </div>
+
+  <div class="map-card">
+    <h2>Trail Map</h2>
+    <div class="sub">Ranger Station 1 to Fishtail Falls</div>
+
+    <svg class="map" viewBox="0 0 600 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- trail path -->
+      <path d="M255 480 L235 500 L245 530 L285 545 L330 530 L335 490 L360 440 L345 400 L365 360 L350 320 L365 280 L355 235 L370 190 L360 140 L372 95"
+            stroke="#bfe2ea" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M255 480 L235 500 L245 530 L285 545 L330 530 L335 490 L360 440 L345 400 L365 360 L350 320 L365 280 L355 235 L370 190 L360 140 L372 95"
+            stroke="#04546f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+      <!-- you are here -->
+      <circle cx="255" cy="480" r="10" fill="#04546f"/>
+      <circle cx="255" cy="480" r="16" fill="#04546f" opacity="0.2"/>
+      <text x="272" y="484" font-family="Inter" font-size="13" font-weight="600" fill="#1f3b45">You are here</text>
+      <text x="272" y="500" font-family="Inter" font-size="11" fill="#6a8894">Ranger Station 1</text>
+
+      <!-- bird watching site near start -->
+      <circle cx="245" cy="530" r="6" fill="#e39d3e"/>
+      <text x="80" y="565" font-family="Inter" font-size="11" fill="#4f7080">Bird / wildlife watching site</text>
+      <line x1="140" y1="561" x2="240" y2="533" stroke="#dfe8ea" stroke-width="1"/>
+
+      <!-- awana bio park -->
+      <circle cx="335" cy="490" r="6" fill="#e39d3e"/>
+      <text x="390" y="494" font-family="Inter" font-size="11" fill="#4f7080">Awana Bio Park &amp;</text>
+      <text x="390" y="508" font-family="Inter" font-size="11" fill="#4f7080">Clearwater ranger station</text>
+      <line x1="385" y1="490" x2="342" y2="490" stroke="#dfe8ea" stroke-width="1"/>
+
+      <!-- another wildlife watching -->
+      <circle cx="365" cy="360" r="6" fill="#e39d3e"/>
+      <text x="400" y="358" font-family="Inter" font-size="11" fill="#4f7080">Bird / wildlife watching,</text>
+      <text x="400" y="372" font-family="Inter" font-size="11" fill="#4f7080">herping &amp; insect site</text>
+      <line x1="395" y1="360" x2="372" y2="360" stroke="#dfe8ea" stroke-width="1"/>
+
+      <!-- ranger station 2 -->
+      <circle cx="365" cy="280" r="6" fill="#04546f"/>
+      <text x="150" y="278" font-family="Inter" font-size="11" font-weight="600" fill="#1f3b45">Ranger Station 2</text>
+      <line x1="255" y1="276" x2="358" y2="280" stroke="#dfe8ea" stroke-width="1"/>
+
+      <!-- lost falls -->
+      <circle cx="355" cy="235" r="6" fill="#5aa3ad"/>
+      <text x="400" y="238" font-family="Inter" font-size="11" fill="#4f7080">Lost Falls</text>
+      <line x1="395" y1="235" x2="362" y2="235" stroke="#dfe8ea" stroke-width="1"/>
+
+      <!-- fishtail falls -->
+      <circle cx="372" cy="95" r="8" fill="#04546f"/>
+      <text x="390" y="92" font-family="Inter" font-size="13" font-weight="600" fill="#1f3b45">Fishtail Falls</text>
+
+      <!-- north arrow -->
+      <g transform="translate(540,540)">
+        <circle cx="0" cy="0" r="22" fill="#fceed4" stroke="#bfe2ea"/>
+        <path d="M0 -12 L5 4 L0 0 L-5 4 Z" fill="#04546f"/>
+        <text x="0" y="20" font-family="Inter" font-size="9" fill="#6a8894" text-anchor="middle">N</text>
+      </g>
+    </svg>
+
+    <div class="legend">
+      <span><i class="sw" style="background:#04546f"></i>Ranger station</span>
+      <span><i class="sw" style="background:#e39d3e"></i>Wildlife-watching site</span>
+      <span><i class="sw" style="background:#5aa3ad"></i>Falls</span>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="videoModal" onclick="if(event.target===this) closeVideo()">
+  <div class="modal-inner">
+    <div class="modal-bar">
+      <select id="langSelect" class="lang-select" onchange="setLanguage(this.value)">
+        <option value="off">Subtitles: Off</option>
+        <option value="en" selected>English</option>
+        <option value="zh">中文 (Chinese)</option>
+        <option value="hi">हिन्दी (Hindi)</option>
+        <option value="es">Español (Spanish)</option>
+        <option value="fr">Français (French)</option>
+        <option value="ar">العربية (Arabic)</option>
+        <option value="ru">Русский (Russian)</option>
+        <option value="ja">日本語 (Japanese)</option>
+        <option value="de">Deutsch (German)</option>
+        <option value="ko">한국어 (Korean)</option>
+        <option value="vi">Tiếng Việt (Vietnamese)</option>
+        <option value="th">ไทย (Thai)</option>
+        <option value="id">Bahasa Indonesia</option>
+        <option value="ms">Bahasa Malaysia</option>
+        <option value="ta">தமிழ் (Tamil)</option>
+      </select>
+      <button class="modal-close" onclick="closeVideo()"><span>✕</span> Close</button>
+    </div>
+    <video id="trailVideo" controls playsinline poster="video_poster.png">
+      <source src="clearwaterway_video.mp4" type="video/mp4">
+    </video>
+  </div>
+</div>
+
+<script>
+  const VTT_DATA = {"ar": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nمرحبًا بكم في كليرووتر واي، مسار طبيعي فريد ذهابًا وإيابًا بطول 6 كيلومترات،\nيقع وسط الغابة المطيرة الكثيفة في مرتفعات جينتينج.\n\n2\n00:00:06.951 --> 00:00:14.283\nمتاحة يوميًا الساعة 9:00 صباحًا، تستغرق هذه الرحلة المصحوبة بمرشد\nما بين 60 إلى 120 دقيقة تقريبًا، لتمنح الزوار تجربة لا تُنسى.\n\n3\n00:00:14.836 --> 00:00:22.667\nتبدأ تجربتك بأول 600 متر من الممر المرصوف،\nحيث تقدّم اللوحات التعريفية وقصص المرشدين معلومات عن الحياة البرية الرائعة،\n\n4\n00:00:22.996 --> 00:00:25.318\nوالنباتات، والنظام البيئي للغابة المطيرة الموجود هنا.\n\n5\n00:00:26.137 --> 00:00:29.940\nالمسار تعليمي ومريح، ومناسب للزوار من جميع الأعمار.\n\n6\n00:00:30.766 --> 00:00:35.466\nأثناء تقدمك في المسار، يتيح لك الجمع بين المشي وركوب العربات\nاستكشاف الطبيعة بعمق أكبر.\n\n7\n00:00:36.291 --> 00:00:43.083\nعلى طول الطريق، ستمر بمحطات المرشدين، ومواقع مراقبة الحياة البرية،\nومناطق إعادة الزراعة، وحديقة أوانا للتنوع الحيوي الجميلة.\n\n8\n00:00:43.908 --> 00:00:46.773\nكليرووتر واي موطن لأكثر من 150 نوعًا من الطيور،\n\n9\n00:00:47.075 --> 00:00:48.794\nمما يجعله جنة لمراقبي الطيور.\n\n10\n00:00:49.612 --> 00:00:52.756\nقد تشاهد أيضًا القرود والقردة العليا وغيرها من حيوانات الغابة المطيرة.\n\n11\n00:00:53.693 --> 00:00:55.491\nوبما أن هذه بيئة طبيعية خالية من حدائق الحيوان،\n\n12\n00:00:55.797 --> 00:00:57.422\nفإن كل مشاهدة تُعد مفاجأة خاصة.\n\n13\n00:00:58.252 --> 00:01:00.437\nمحاطًا بهواء الجبال المنعش والخضرة الكثيفة،\n\n14\n00:01:00.768 --> 00:01:04.719\nيوفر المسار هروبًا هادئًا مع تعزيز تقدير الطبيعة والحفاظ عليها.\n\n15\n00:01:05.520 --> 00:01:12.332\nتنتهي الرحلة عند شلالات فيشتيل الجميلة بالقرب من معبد تشين سوي،\nلتكون الختام المثالي لتجربة لا تُنسى في الغابة المطيرة.\n\n16\n00:01:13.154 --> 00:01:16.448\nتعالوا لاكتشاف الطبيعة والتعلّم منها وإعادة الاتصال بها في كليرووتر واي.\n", "de": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nWillkommen bei Clearwater Way, einem einzigartigen 6 Kilometer langen Rundwanderweg\nmitten im üppigen Regenwald der Genting Highlands.\n\n2\n00:00:06.951 --> 00:00:14.283\nTäglich um 9:00 Uhr verfügbar, dauert dieses geführte Abenteuer etwa 60 bis 120 Minuten\nund bietet den Besuchern ein unvergessliches Erlebnis.\n\n3\n00:00:14.836 --> 00:00:22.667\nIhr Erlebnis beginnt mit den ersten 600 Metern eines gepflasterten Wegs,\nauf dem informative Schilder und die Erzählungen der Ranger die faszinierende Tierwelt,\n\n4\n00:00:22.996 --> 00:00:25.318\ndie Pflanzen und das hier vorkommende Regenwald-Ökosystem vorstellen.\n\n5\n00:00:26.137 --> 00:00:29.940\nDer Weg ist lehrreich, entspannend und für Besucher jeden Alters geeignet.\n\n6\n00:00:30.766 --> 00:00:35.466\nWährend Sie weitergehen, ermöglicht Ihnen eine Kombination aus Wandern und Buggy-Fahrten,\ntiefer in die Natur einzutauchen.\n\n7\n00:00:36.291 --> 00:00:43.083\nUnterwegs passieren Sie Ranger-Stationen, Beobachtungsstellen für Wildtiere,\nWiederaufforstungsflächen und den wunderschönen Awana Bio Park.\n\n8\n00:00:43.908 --> 00:00:46.773\nClearwater Way ist die Heimat von über 150 Vogelarten,\n\n9\n00:00:47.075 --> 00:00:48.794\nwas ihn zu einem Paradies für Vogelbeobachter macht.\n\n10\n00:00:49.612 --> 00:00:52.756\nSie könnten auch Affen und andere Regenwaldtiere entdecken.\n\n11\n00:00:53.693 --> 00:00:55.491\nDa es sich um eine natürliche Umgebung ohne Zoo handelt,\n\n12\n00:00:55.797 --> 00:00:57.422\nist jede Sichtung eine besondere Überraschung.\n\n13\n00:00:58.252 --> 00:01:00.437\nUmgeben von frischer Bergluft und üppigem Grün,\n\n14\n00:01:00.768 --> 00:01:04.719\nbietet der Weg eine ruhige Auszeit und fördert gleichzeitig die Wertschätzung und den Schutz der Natur.\n\n15\n00:01:05.520 --> 00:01:12.332\nDas Abenteuer endet an den wunderschönen Fishtail Falls in der Nähe des Chin-Swee-Tempels –\nder perfekte Abschluss für ein unvergessliches Regenwalderlebnis.\n\n16\n00:01:13.154 --> 00:01:16.448\nEntdecken, lernen und neu mit der Natur verbinden – bei Clearwater Way.\n", "en": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nWelcome to Clearwater Way, a unique 6-kilometre\nreturn nature trail nestled within the lush rainforest of Genting Highlands.\n\n2\n00:00:06.951 --> 00:00:14.283\nAvailable daily at 9:00 AM, this guided adventure\ntakes approximately 60 to 120 minutes, offering visitors an unforgettable journey.\n\n3\n00:00:14.836 --> 00:00:22.667\nYour experience begins with the first 600 metres of paved walkway,\nwhere informative signboards and ranger-guided storytelling introduce the fascinating wildlife,\n\n4\n00:00:22.996 --> 00:00:25.318\nplants, and rainforest ecosystem found here.\n\n5\n00:00:26.137 --> 00:00:29.940\nThe trail is educational, relaxing, and suitable for visitors of all ages.\n\n6\n00:00:30.766 --> 00:00:35.466\nAs you continue, a combination of walking and buggy rides\nallows you to explore deeper into nature.\n\n7\n00:00:36.291 --> 00:00:43.083\nAlong the way, you'll pass ranger stations, wildlife-watching hotspots,\nrestoration planting areas, and the beautiful Awana Bio Park.\n\n8\n00:00:43.908 --> 00:00:46.773\nClearwater Way is home to over 150 bird species,\n\n9\n00:00:47.075 --> 00:00:48.794\nmaking it a paradise for birdwatchers.\n\n10\n00:00:49.612 --> 00:00:52.756\nYou may also spot monkeys, apes, and other rainforest wildlife.\n\n11\n00:00:53.693 --> 00:00:55.491\nAs this is a zoo-free natural environment,\n\n12\n00:00:55.797 --> 00:00:57.422\nevery sighting is a special surprise.\n\n13\n00:00:58.252 --> 00:01:00.437\nSurrounded by fresh mountain air and lush greenery,\n\n14\n00:01:00.768 --> 00:01:04.719\nthe trail offers a peaceful escape while promoting nature appreciation and conservation.\n\n15\n00:01:05.520 --> 00:01:12.332\nThe adventure ends at the beautiful Fishtail Falls near Chin Swee Temple,\nproviding the perfect finale to an unforgettable rainforest experience.\n\n16\n00:01:13.154 --> 00:01:16.448\nCome discover, learn, and reconnect with nature at Clearwater Way.\n", "es": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nBienvenido a Clearwater Way, un exclusivo sendero natural de ida y vuelta de 6 kilómetros,\nubicado en medio de la exuberante selva tropical de las Genting Highlands.\n\n2\n00:00:06.951 --> 00:00:14.283\nDisponible todos los días a las 9:00 a.m., esta aventura guiada dura aproximadamente\nentre 60 y 120 minutos, ofreciendo a los visitantes un viaje inolvidable.\n\n3\n00:00:14.836 --> 00:00:22.667\nTu experiencia comienza con los primeros 600 metros de camino pavimentado,\ndonde carteles informativos y relatos guiados por guardabosques presentan la fascinante vida silvestre,\n\n4\n00:00:22.996 --> 00:00:25.318\nlas plantas y el ecosistema de la selva tropical que se encuentra aquí.\n\n5\n00:00:26.137 --> 00:00:29.940\nEl sendero es educativo, relajante y adecuado para visitantes de todas las edades.\n\n6\n00:00:30.766 --> 00:00:35.466\nA medida que avanzas, una combinación de caminata y paseos en buggy\nte permite explorar la naturaleza con mayor profundidad.\n\n7\n00:00:36.291 --> 00:00:43.083\nEn el camino, pasarás por estaciones de guardabosques, puntos de observación de vida silvestre,\náreas de restauración con plantaciones, y el hermoso Awana Bio Park.\n\n8\n00:00:43.908 --> 00:00:46.773\nClearwater Way alberga más de 150 especies de aves,\n\n9\n00:00:47.075 --> 00:00:48.794\nlo que lo convierte en un paraíso para los observadores de aves.\n\n10\n00:00:49.612 --> 00:00:52.756\nTambién podrías avistar monos, simios y otra fauna de la selva tropical.\n\n11\n00:00:53.693 --> 00:00:55.491\nAl ser un entorno natural sin zoológico,\n\n12\n00:00:55.797 --> 00:00:57.422\ncada avistamiento es una sorpresa especial.\n\n13\n00:00:58.252 --> 00:01:00.437\nRodeado de aire fresco de montaña y vegetación exuberante,\n\n14\n00:01:00.768 --> 00:01:04.719\nel sendero ofrece un escape tranquilo mientras promueve la apreciación y conservación de la naturaleza.\n\n15\n00:01:05.520 --> 00:01:12.332\nLa aventura termina en las hermosas cataratas Fishtail, cerca del templo Chin Swee,\nel final perfecto para una experiencia inolvidable en la selva tropical.\n\n16\n00:01:13.154 --> 00:01:16.448\nVen a descubrir, aprender y reconectar con la naturaleza en Clearwater Way.\n", "fr": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nBienvenue à Clearwater Way, un sentier naturel unique de 6 kilomètres aller-retour,\nniché au cœur de la forêt tropicale luxuriante des Genting Highlands.\n\n2\n00:00:06.951 --> 00:00:14.283\nDisponible tous les jours à 9h00, cette aventure guidée dure environ 60 à 120 minutes\net offre aux visiteurs un voyage inoubliable.\n\n3\n00:00:14.836 --> 00:00:22.667\nVotre expérience commence par les 600 premiers mètres d'une allée pavée,\noù des panneaux informatifs et les récits des rangers présentent une faune fascinante,\n\n4\n00:00:22.996 --> 00:00:25.318\nainsi que la flore et l'écosystème de la forêt tropicale que l'on trouve ici.\n\n5\n00:00:26.137 --> 00:00:29.940\nLe sentier est éducatif, apaisant, et adapté aux visiteurs de tous âges.\n\n6\n00:00:30.766 --> 00:00:35.466\nEn poursuivant votre chemin, une combinaison de marche et de trajets en buggy\nvous permet d'explorer la nature plus en profondeur.\n\n7\n00:00:36.291 --> 00:00:43.083\nEn chemin, vous passerez devant des postes de rangers, des sites d'observation de la faune,\ndes zones de reboisement, et le magnifique Awana Bio Park.\n\n8\n00:00:43.908 --> 00:00:46.773\nClearwater Way abrite plus de 150 espèces d'oiseaux,\n\n9\n00:00:47.075 --> 00:00:48.794\nce qui en fait un paradis pour les ornithologues amateurs.\n\n10\n00:00:49.612 --> 00:00:52.756\nVous pourrez aussi apercevoir des singes, des grands singes, et d'autres animaux sauvages de la forêt tropicale.\n\n11\n00:00:53.693 --> 00:00:55.491\nComme il s'agit d'un environnement naturel sans zoo,\n\n12\n00:00:55.797 --> 00:00:57.422\nchaque rencontre est une surprise unique.\n\n13\n00:00:58.252 --> 00:01:00.437\nEntouré d'un air de montagne frais et d'une végétation luxuriante,\n\n14\n00:01:00.768 --> 00:01:04.719\nle sentier offre une échappée paisible tout en encourageant l'appréciation et la préservation de la nature.\n\n15\n00:01:05.520 --> 00:01:12.332\nL'aventure se termine aux magnifiques chutes de Fishtail, près du temple Chin Swee,\nun final parfait pour une expérience inoubliable en forêt tropicale.\n\n16\n00:01:13.154 --> 00:01:16.448\nVenez découvrir, apprendre, et renouer avec la nature à Clearwater Way.\n", "hi": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nक्लियरवाटर वे में आपका स्वागत है, यह जेंटिंग हाइलैंड्स के घने वर्षावन के बीच बसा\nएक अनोखा 6 किलोमीटर लंबा आने-जाने वाला प्रकृति पथ है।\n\n2\n00:00:06.951 --> 00:00:14.283\nप्रतिदिन सुबह 9:00 बजे उपलब्ध, यह गाइडेड यात्रा लगभग 60 से 120 मिनट लेती है,\nऔर आगंतुकों को एक अविस्मरणीय अनुभव प्रदान करती है।\n\n3\n00:00:14.836 --> 00:00:22.667\nआपका अनुभव पहले 600 मीटर के पक्के रास्ते से शुरू होता है,\nजहाँ जानकारीपूर्ण साइनबोर्ड और रेंजर द्वारा सुनाई जाने वाली कहानियाँ रोमांचक वन्यजीवों,\n\n4\n00:00:22.996 --> 00:00:25.318\nपौधों, और यहाँ पाए जाने वाले वर्षावन पारिस्थितिकी तंत्र से परिचित कराती हैं।\n\n5\n00:00:26.137 --> 00:00:29.940\nयह पथ शिक्षाप्रद, आरामदायक, और सभी उम्र के आगंतुकों के लिए उपयुक्त है।\n\n6\n00:00:30.766 --> 00:00:35.466\nजैसे-जैसे आप आगे बढ़ते हैं, पैदल चलने और बग्गी की सवारी का संयोजन\nआपको प्रकृति में और गहराई तक जाने का मौका देता है।\n\n7\n00:00:36.291 --> 00:00:43.083\nरास्ते में, आप रेंजर स्टेशनों, वन्यजीव-दर्शन स्थलों,\nबहाली रोपण क्षेत्रों, और सुंदर अवाना बायो पार्क से गुज़रेंगे।\n\n8\n00:00:43.908 --> 00:00:46.773\nक्लियरवाटर वे 150 से अधिक पक्षी प्रजातियों का घर है,\n\n9\n00:00:47.075 --> 00:00:48.794\nजो इसे पक्षी प्रेमियों के लिए स्वर्ग बनाता है।\n\n10\n00:00:49.612 --> 00:00:52.756\nआप बंदर, वानर, और अन्य वर्षावन वन्यजीवों को भी देख सकते हैं।\n\n11\n00:00:53.693 --> 00:00:55.491\nचूँकि यह एक चिड़ियाघर-मुक्त प्राकृतिक वातावरण है,\n\n12\n00:00:55.797 --> 00:00:57.422\nहर नज़ारा एक खास आश्चर्य होता है।\n\n13\n00:00:58.252 --> 00:01:00.437\nताज़ी पहाड़ी हवा और घनी हरियाली से घिरा हुआ,\n\n14\n00:01:00.768 --> 00:01:04.719\nयह पथ प्रकृति की सराहना और संरक्षण को बढ़ावा देते हुए एक शांतिपूर्ण पलायन प्रदान करता है।\n\n15\n00:01:05.520 --> 00:01:12.332\nयह यात्रा चिन स्वी मंदिर के पास स्थित खूबसूरत फिशटेल फॉल्स पर समाप्त होती है,\nजो एक अविस्मरणीय वर्षावन अनुभव का सही समापन है।\n\n16\n00:01:13.154 --> 00:01:16.448\nक्लियरवाटर वे में आइए, खोजें, सीखें, और प्रकृति से फिर से जुड़ें।\n", "id": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nSelamat datang di Clearwater Way, jalur alam pulang-pergi sejauh 6 kilometer yang unik,\nterletak di tengah hutan hujan tropis nan asri di Genting Highlands.\n\n2\n00:00:06.951 --> 00:00:14.283\nTersedia setiap hari pukul 9:00 pagi, petualangan berpemandu ini memakan waktu sekitar 60 hingga 120 menit,\nmemberikan pengalaman tak terlupakan bagi pengunjung.\n\n3\n00:00:14.836 --> 00:00:22.667\nPerjalanan Anda dimulai dari 600 meter pertama jalan setapak berpaving,\ndi mana papan informasi dan cerita dari ranger memperkenalkan satwa liar yang menakjubkan,\n\n4\n00:00:22.996 --> 00:00:25.318\ntumbuhan, serta ekosistem hutan hujan yang ada di sini.\n\n5\n00:00:26.137 --> 00:00:29.940\nJalur ini bersifat edukatif, menenangkan, dan cocok untuk pengunjung dari segala usia.\n\n6\n00:00:30.766 --> 00:00:35.466\nSaat Anda melanjutkan perjalanan, kombinasi berjalan kaki dan naik buggy\nmemungkinkan Anda menjelajahi alam lebih dalam.\n\n7\n00:00:36.291 --> 00:00:43.083\nDi sepanjang jalan, Anda akan melewati pos ranger, titik pengamatan satwa liar,\narea penanaman restorasi, dan Awana Bio Park yang indah.\n\n8\n00:00:43.908 --> 00:00:46.773\nClearwater Way adalah rumah bagi lebih dari 150 spesies burung,\n\n9\n00:00:47.075 --> 00:00:48.794\nmenjadikannya surga bagi para pengamat burung.\n\n10\n00:00:49.612 --> 00:00:52.756\nAnda juga mungkin melihat monyet, kera, dan satwa liar hutan hujan lainnya.\n\n11\n00:00:53.693 --> 00:00:55.491\nKarena ini adalah lingkungan alami tanpa kebun binatang,\n\n12\n00:00:55.797 --> 00:00:57.422\nsetiap penampakan menjadi kejutan yang istimewa.\n\n13\n00:00:58.252 --> 00:01:00.437\nDikelilingi udara pegunungan yang segar dan kehijauan yang rimbun,\n\n14\n00:01:00.768 --> 00:01:04.719\njalur ini menawarkan pelarian yang tenang sekaligus mendorong apresiasi dan pelestarian alam.\n\n15\n00:01:05.520 --> 00:01:12.332\nPetualangan berakhir di Air Terjun Fishtail yang indah, dekat Kuil Chin Swee,\nmemberikan penutup sempurna untuk pengalaman hutan hujan yang tak terlupakan.\n\n16\n00:01:13.154 --> 00:01:16.448\nDatang dan temukan, pelajari, serta terhubung kembali dengan alam di Clearwater Way.\n", "ja": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nクリアウォーター・ウェイへようこそ。ここはジェンティン・ハイランドの豊かな熱帯雨林に抱かれた、\n往復6キロメートルのユニークな自然の小道です。\n\n2\n00:00:06.951 --> 00:00:14.283\n毎日午前9時から出発するこのガイド付きツアーは、所要時間約60分から120分で、\n訪れる人々に忘れられない旅を提供します。\n\n3\n00:00:14.836 --> 00:00:22.667\n旅は最初の600メートルの舗装された遊歩道から始まり、\n案内板やレンジャーによる語りが、魅力的な野生動物、\n\n4\n00:00:22.996 --> 00:00:25.318\n植物、そしてここに息づく熱帯雨林の生態系を紹介してくれます。\n\n5\n00:00:26.137 --> 00:00:29.940\nこの小道は教育的でありながらリラックスでき、あらゆる年齢の訪問者に適しています。\n\n6\n00:00:30.766 --> 00:00:35.466\n先へ進むと、徒歩とバギーライドを組み合わせて、\nより深く自然を探索することができます。\n\n7\n00:00:36.291 --> 00:00:43.083\n道中では、レンジャーステーション、野生動物観察スポット、\n再生植樹エリア、そして美しいアワナ・バイオパークを通り抜けます。\n\n8\n00:00:43.908 --> 00:00:46.773\nクリアウォーター・ウェイには150種類以上の鳥類が生息しており、\n\n9\n00:00:47.075 --> 00:00:48.794\nバードウォッチャーにとってはまさに楽園です。\n\n10\n00:00:49.612 --> 00:00:52.756\nサルや類人猿など、他の熱帯雨林の野生動物にも出会えるかもしれません。\n\n11\n00:00:53.693 --> 00:00:55.491\nここは動物園のない自然そのものの環境なので、\n\n12\n00:00:55.797 --> 00:00:57.422\n出会う一瞬一瞬が特別な驚きとなります。\n\n13\n00:00:58.252 --> 00:01:00.437\n新鮮な山の空気と生い茂る緑に包まれながら、\n\n14\n00:01:00.768 --> 00:01:04.719\nこの小道は自然への理解と保全を促しつつ、心安らぐひとときを提供します。\n\n15\n00:01:05.520 --> 00:01:12.332\n旅の終着点は、チンスイ寺院近くの美しいフィッシュテール滝。\n忘れられない熱帯雨林の旅にふさわしい締めくくりです。\n\n16\n00:01:13.154 --> 00:01:16.448\nクリアウォーター・ウェイで、発見し、学び、自然と再びつながりましょう。\n", "ko": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\n클리어워터 웨이에 오신 것을 환영합니다. 이곳은 겐팅 하이랜드의\n울창한 열대 우림 속에 자리한 독특한 왕복 6킬로미터의 자연 트레일입니다.\n\n2\n00:00:06.951 --> 00:00:14.283\n매일 오전 9시에 시작되는 이 가이드 투어는\n약 60분에서 120분 정도 소요되며, 방문객에게 잊지 못할 여정을 선사합니다.\n\n3\n00:00:14.836 --> 00:00:22.667\n여정은 처음 600미터의 포장된 산책로에서 시작되며,\n안내판과 레인저의 스토리텔링을 통해 매혹적인 야생동물,\n\n4\n00:00:22.996 --> 00:00:25.318\n그리고 이곳의 식물과 열대 우림 생태계를 소개합니다.\n\n5\n00:00:26.137 --> 00:00:29.940\n이 트레일은 교육적이면서도 편안하며, 모든 연령대의 방문객에게 적합합니다.\n\n6\n00:00:30.766 --> 00:00:35.466\n계속 나아가면 도보와 버기 라이드가 결합되어\n자연 속으로 더 깊이 탐험할 수 있습니다.\n\n7\n00:00:36.291 --> 00:00:43.083\n길을 따라 레인저 스테이션, 야생동물 관찰 명소,\n복원 식재 구역, 그리고 아름다운 아와나 바이오파크를 지나게 됩니다.\n\n8\n00:00:43.908 --> 00:00:46.773\n클리어워터 웨이는 150종이 넘는 조류의 서식지로,\n\n9\n00:00:47.075 --> 00:00:48.794\n탐조가들에게는 그야말로 낙원입니다.\n\n10\n00:00:49.612 --> 00:00:52.756\n원숭이, 유인원을 비롯한 다른 열대 우림 야생동물도 만날 수 있습니다.\n\n11\n00:00:53.693 --> 00:00:55.491\n이곳은 동물원이 아닌 자연 그대로의 환경이기 때문에,\n\n12\n00:00:55.797 --> 00:00:57.422\n모든 마주침이 특별한 놀라움이 됩니다.\n\n13\n00:00:58.252 --> 00:01:00.437\n신선한 산 공기와 무성한 초록빛에 둘러싸인 채,\n\n14\n00:01:00.768 --> 00:01:04.719\n이 트레일은 평화로운 휴식을 제공하는 동시에 자연 감상과 보전을 장려합니다.\n\n15\n00:01:05.520 --> 00:01:12.332\n여정은 친스위 사원 근처의 아름다운 피시테일 폭포에서 마무리되며,\n잊지 못할 열대 우림 여정의 완벽한 마침표가 됩니다.\n\n16\n00:01:13.154 --> 00:01:16.448\n클리어워터 웨이에서 발견하고, 배우고, 자연과 다시 연결되어 보세요.\n", "ms": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nSelamat datang ke Clearwater Way, laluan semula jadi pergi-balik\nsejauh 6 kilometer yang unik, terletak di tengah hutan hujan tropika Genting Highlands.\n\n2\n00:00:06.951 --> 00:00:14.283\nTersedia setiap hari jam 9:00 pagi, pengembaraan berpandu ini\nmengambil masa lebih kurang 60 hingga 120 minit, menawarkan pengalaman tidak dilupakan.\n\n3\n00:00:14.836 --> 00:00:22.667\nPengalaman anda bermula dengan 600 meter pertama laluan turap,\ndi mana papan tanda bermaklumat dan penceritaan renjer memperkenalkan hidupan liar,\n\n4\n00:00:22.996 --> 00:00:25.318\ntumbuhan, dan ekosistem hutan hujan yang menarik di sini.\n\n5\n00:00:26.137 --> 00:00:29.940\nLaluan ini bersifat mendidik, menenangkan, dan sesuai untuk semua peringkat umur.\n\n6\n00:00:30.766 --> 00:00:35.466\nSemasa anda meneruskan perjalanan, gabungan berjalan kaki dan tunggangan buggy\nmembolehkan anda meneroka lebih jauh ke dalam alam semula jadi.\n\n7\n00:00:36.291 --> 00:00:43.083\nDi sepanjang laluan, anda akan melalui stesen renjer, kawasan pemerhatian hidupan liar,\nkawasan penanaman pemulihan, dan Awana Bio Park yang indah.\n\n8\n00:00:43.908 --> 00:00:46.773\nClearwater Way adalah rumah kepada lebih 150 spesies burung,\n\n9\n00:00:47.075 --> 00:00:48.794\nmenjadikannya syurga untuk peminat pemerhatian burung.\n\n10\n00:00:49.612 --> 00:00:52.756\nAnda juga mungkin melihat monyet, kera, dan hidupan liar hutan hujan yang lain.\n\n11\n00:00:53.693 --> 00:00:55.491\nOleh kerana ini persekitaran semula jadi tanpa zoo,\n\n12\n00:00:55.797 --> 00:00:57.422\nsetiap penampakan adalah kejutan yang istimewa.\n\n13\n00:00:58.252 --> 00:01:00.437\nDikelilingi udara pergunungan yang segar dan kehijauan yang subur,\n\n14\n00:01:00.768 --> 00:01:04.719\nlaluan ini menawarkan ketenangan sambil menggalakkan penghayatan dan pemuliharaan alam semula jadi.\n\n15\n00:01:05.520 --> 00:01:12.332\nPengembaraan berakhir di Fishtail Falls yang indah berhampiran Kuil Chin Swee,\nmemberi penutup sempurna kepada pengalaman hutan hujan yang tidak dilupakan.\n\n16\n00:01:13.154 --> 00:01:16.448\nDatang terokai, belajar, dan hubungkan semula diri anda dengan alam di Clearwater Way.\n", "ru": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nДобро пожаловать на Clearwater Way — уникальную природную тропу протяжённостью 6 километров туда и обратно,\nрасположенную посреди густого тропического леса Гентинг Хайлендс.\n\n2\n00:00:06.951 --> 00:00:14.283\nДоступный ежедневно в 9:00 утра, этот тур с гидом занимает примерно от 60 до 120 минут\nи дарит посетителям незабываемое путешествие.\n\n3\n00:00:14.836 --> 00:00:22.667\nВаш маршрут начинается с первых 600 метров мощёной дорожки,\nгде информационные таблички и рассказы рейнджеров знакомят вас с удивительным животным миром,\n\n4\n00:00:22.996 --> 00:00:25.318\nрастениями и экосистемой тропического леса, встречающимися здесь.\n\n5\n00:00:26.137 --> 00:00:29.940\nТропа носит познавательный, расслабляющий характер и подходит посетителям любого возраста.\n\n6\n00:00:30.766 --> 00:00:35.466\nПродолжая путь, вы сможете сочетать пешую прогулку с поездкой на багги,\nчтобы глубже исследовать природу.\n\n7\n00:00:36.291 --> 00:00:43.083\nПо пути вы пройдёте станции рейнджеров, места для наблюдения за дикой природой,\nзоны восстановительных посадок и прекрасный биопарк Авана.\n\n8\n00:00:43.908 --> 00:00:46.773\nClearwater Way является домом для более чем 150 видов птиц,\n\n9\n00:00:47.075 --> 00:00:48.794\nчто делает это место настоящим раем для любителей наблюдения за птицами.\n\n10\n00:00:49.612 --> 00:00:52.756\nВы также можете увидеть обезьян, приматов и других обитателей тропического леса.\n\n11\n00:00:53.693 --> 00:00:55.491\nПоскольку это естественная среда без зоопарка,\n\n12\n00:00:55.797 --> 00:00:57.422\nкаждая встреча становится особым сюрпризом.\n\n13\n00:00:58.252 --> 00:01:00.437\nВ окружении свежего горного воздуха и пышной зелени,\n\n14\n00:01:00.768 --> 00:01:04.719\nтропа предлагает спокойный отдых, способствуя бережному отношению к природе и её сохранению.\n\n15\n00:01:05.520 --> 00:01:12.332\nПутешествие завершается у прекрасного водопада Фиштейл рядом с храмом Чин Суи —\nидеальный финал незабываемого путешествия по тропическому лесу.\n\n16\n00:01:13.154 --> 00:01:16.448\nПриходите открывать, познавать и вновь соединяться с природой на Clearwater Way.\n", "ta": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nகிளியர்வாட்டர் வேயிற்கு வரவேற்கிறோம், இது ஜென்டிங் மலைப்பகுதியின்\nஅடர்ந்த மழைக்காட்டுக்குள் அமைந்துள்ள தனித்துவமான 6 கிலோமீட்டர் செல்ல-திரும்பும் இயற்கை பாதை.\n\n2\n00:00:06.951 --> 00:00:14.283\nதினமும் காலை 9:00 மணிக்குக் கிடைக்கும் இந்த வழிகாட்டப்பட்ட பயணம்\nசுமார் 60 முதல் 120 நிமிடங்கள் நீடிக்கும், பார்வையாளர்களுக்கு மறக்க முடியாத அனுபவத்தை வழங்குகிறது.\n\n3\n00:00:14.836 --> 00:00:22.667\nஉங்கள் பயணம் முதல் 600 மீட்டர் நடைபாதையில் தொடங்குகிறது,\nஅங்கு தகவல் பலகைகளும் ரேஞ்சர் கதை சொல்லலும் அற்புதமான வனவிலங்குகளை அறிமுகப்படுத்துகின்றன,\n\n4\n00:00:22.996 --> 00:00:25.318\nதாவரங்களையும், இங்குள்ள மழைக்காட்டு சூழலமைப்பையும் அறிமுகப்படுத்துகின்றன.\n\n5\n00:00:26.137 --> 00:00:29.940\nஇந்த பாதை கல்வி சார்ந்ததாகவும், நிம்மதி அளிப்பதாகவும், அனைத்து வயதினருக்கும் ஏற்றதாகவும் உள்ளது.\n\n6\n00:00:30.766 --> 00:00:35.466\nநீங்கள் தொடரும்போது, நடைபயணமும் பக்கி சவாரியும் இணைந்து\nஇயற்கையை இன்னும் ஆழமாக ஆராய உதவுகின்றன.\n\n7\n00:00:36.291 --> 00:00:43.083\nவழியில், ரேஞ்சர் நிலையங்கள், வனவிலங்கு பார்வையிடும் இடங்கள்,\nமறுசீரமைப்பு நடவு பகுதிகள், மற்றும் அழகிய அவானா பயோ பார்க் ஆகியவற்றைக் கடந்து செல்வீர்கள்.\n\n8\n00:00:43.908 --> 00:00:46.773\nகிளியர்வாட்டர் வே 150-க்கும் மேற்பட்ட பறவை இனங்களின் தாயகமாகும்,\n\n9\n00:00:47.075 --> 00:00:48.794\nஇது பறவை பார்வையாளர்களுக்கு ஒரு சொர்க்கமாக அமைகிறது.\n\n10\n00:00:49.612 --> 00:00:52.756\nகுரங்குகள், கபி இனங்கள், மற்றும் பிற மழைக்காட்டு வனவிலங்குகளையும் நீங்கள் காணலாம்.\n\n11\n00:00:53.693 --> 00:00:55.491\nஇது மிருகக்காட்சிசாலை இல்லாத இயற்கையான சூழல் என்பதால்,\n\n12\n00:00:55.797 --> 00:00:57.422\nஒவ்வொரு பார்வையும் ஒரு சிறப்பு ஆச்சரியமாக இருக்கும்.\n\n13\n00:00:58.252 --> 00:01:00.437\nபுத்துணர்ச்சியூட்டும் மலைக் காற்றும் அடர்ந்த பசுமையும் சூழ,\n\n14\n00:01:00.768 --> 00:01:04.719\nஇந்த பாதை இயற்கையைப் போற்றுவதையும் பாதுகாப்பதையும் ஊக்குவிக்கும் அதே வேளையில் ஒரு அமைதியான ஓய்வையும் வழங்குகிறது.\n\n15\n00:01:05.520 --> 00:01:12.332\nஇந்த பயணம் சின் ஸ்வீ கோவிலுக்கு அருகில் உள்ள அழகிய ஃபிஷ்டெயில் நீர்வீழ்ச்சியில் முடிவடைகிறது,\nமறக்க முடியாத மழைக்காட்டு அனுபவத்திற்கு சிறந்த முடிவைத் தருகிறது.\n\n16\n00:01:13.154 --> 00:01:16.448\nகிளியர்வாட்டர் வேயில் வந்து கண்டறியுங்கள், கற்றுக்கொள்ளுங்கள், இயற்கையுடன் மீண்டும் இணையுங்கள்.\n", "th": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nยินดีต้อนรับสู่ Clearwater Way เส้นทางธรรมชาติสุดพิเศษระยะทาง 6 กิโลเมตรแบบไป-กลับ\nตั้งอยู่ท่ามกลางป่าฝนอันเขียวชอุ่มของเก็นติ้งไฮแลนด์\n\n2\n00:00:06.951 --> 00:00:14.283\nเปิดให้บริการทุกวันเวลา 9.00 น. ทริปนำเที่ยวนี้ใช้เวลาประมาณ 60 ถึง 120 นาที\nมอบประสบการณ์ที่ไม่มีวันลืมให้แก่ผู้มาเยือน\n\n3\n00:00:14.836 --> 00:00:22.667\nการเดินทางของคุณเริ่มต้นด้วยทางเดินปูพื้นระยะ 600 เมตรแรก\nซึ่งมีป้ายให้ความรู้และการเล่าเรื่องโดยเรนเจอร์ แนะนำสัตว์ป่าที่น่าทึ่ง\n\n4\n00:00:22.996 --> 00:00:25.318\nพืชพรรณ และระบบนิเวศป่าฝนที่พบได้ที่นี่\n\n5\n00:00:26.137 --> 00:00:29.940\nเส้นทางนี้ให้ทั้งความรู้และความผ่อนคลาย เหมาะสำหรับผู้มาเยือนทุกวัย\n\n6\n00:00:30.766 --> 00:00:35.466\nเมื่อเดินทางต่อไป การผสมผสานระหว่างการเดินเท้าและการนั่งรถบักกี้\nจะช่วยให้คุณได้สำรวจธรรมชาติในระดับที่ลึกยิ่งขึ้น\n\n7\n00:00:36.291 --> 00:00:43.083\nระหว่างทาง คุณจะผ่านสถานีเรนเจอร์ จุดชมสัตว์ป่า\nพื้นที่ปลูกฟื้นฟู และ Awana Bio Park อันสวยงาม\n\n8\n00:00:43.908 --> 00:00:46.773\nClearwater Way เป็นถิ่นอาศัยของนกกว่า 150 สายพันธุ์\n\n9\n00:00:47.075 --> 00:00:48.794\nทำให้ที่นี่เป็นสวรรค์ของนักดูนก\n\n10\n00:00:49.612 --> 00:00:52.756\nคุณอาจได้พบลิง วานร และสัตว์ป่าอื่น ๆ ในป่าฝนด้วยเช่นกัน\n\n11\n00:00:53.693 --> 00:00:55.491\nเนื่องจากที่นี่เป็นสภาพแวดล้อมทางธรรมชาติที่ปราศจากสวนสัตว์\n\n12\n00:00:55.797 --> 00:00:57.422\nการพบเจอแต่ละครั้งจึงเป็นความประหลาดใจพิเศษเฉพาะตัว\n\n13\n00:00:58.252 --> 00:01:00.437\nท่ามกลางอากาศบริสุทธิ์บนภูเขาและความเขียวชอุ่มโดยรอบ\n\n14\n00:01:00.768 --> 00:01:04.719\nเส้นทางนี้มอบพื้นที่พักผ่อนอันสงบ พร้อมส่งเสริมการซาบซึ้งและอนุรักษ์ธรรมชาติ\n\n15\n00:01:05.520 --> 00:01:12.332\nการเดินทางสิ้นสุดที่น้ำตก Fishtail อันงดงาม ใกล้กับวัดชินสวี\nซึ่งเป็นบทสรุปที่สมบูรณ์แบบของประสบการณ์ป่าฝนที่ไม่มีวันลืม\n\n16\n00:01:13.154 --> 00:01:16.448\nมาค้นพบ เรียนรู้ และเชื่อมโยงกับธรรมชาติอีกครั้งที่ Clearwater Way\n", "vi": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\nChào mừng đến với Clearwater Way, một cung đường thiên nhiên khứ hồi dài 6 km độc đáo,\nnằm giữa khu rừng mưa nhiệt đới tươi tốt của Genting Highlands.\n\n2\n00:00:06.951 --> 00:00:14.283\nMở cửa hằng ngày lúc 9 giờ sáng, hành trình có hướng dẫn viên này kéo dài khoảng 60 đến 120 phút,\nmang đến cho du khách một chuyến đi khó quên.\n\n3\n00:00:14.836 --> 00:00:22.667\nHành trình của bạn bắt đầu với 600 mét đầu tiên trên lối đi lát đá,\nnơi các biển thông tin và những câu chuyện do kiểm lâm viên kể giới thiệu về hệ động vật hoang dã hấp dẫn,\n\n4\n00:00:22.996 --> 00:00:25.318\nhệ thực vật, và hệ sinh thái rừng mưa nơi đây.\n\n5\n00:00:26.137 --> 00:00:29.940\nCung đường này vừa mang tính giáo dục, vừa thư giãn, phù hợp với du khách ở mọi lứa tuổi.\n\n6\n00:00:30.766 --> 00:00:35.466\nKhi tiếp tục hành trình, việc kết hợp đi bộ và di chuyển bằng xe buggy\nsẽ giúp bạn khám phá thiên nhiên sâu hơn.\n\n7\n00:00:36.291 --> 00:00:43.083\nTrên đường đi, bạn sẽ đi qua các trạm kiểm lâm, điểm ngắm động vật hoang dã,\nkhu vực trồng phục hồi, và Awana Bio Park xinh đẹp.\n\n8\n00:00:43.908 --> 00:00:46.773\nClearwater Way là nơi sinh sống của hơn 150 loài chim,\n\n9\n00:00:47.075 --> 00:00:48.794\nkhiến nơi đây trở thành thiên đường cho những người yêu thích ngắm chim.\n\n10\n00:00:49.612 --> 00:00:52.756\nBạn cũng có thể bắt gặp khỉ, vượn, và các loài động vật hoang dã khác của rừng mưa.\n\n11\n00:00:53.693 --> 00:00:55.491\nVì đây là môi trường tự nhiên không có sở thú,\n\n12\n00:00:55.797 --> 00:00:57.422\nnên mỗi lần bắt gặp đều là một bất ngờ đặc biệt.\n\n13\n00:00:58.252 --> 00:01:00.437\nBao quanh bởi không khí núi trong lành và cây cối xanh tươi,\n\n14\n00:01:00.768 --> 00:01:04.719\ncung đường mang đến một khoảng lặng bình yên, đồng thời khuyến khích sự trân trọng và bảo tồn thiên nhiên.\n\n15\n00:01:05.520 --> 00:01:12.332\nHành trình kết thúc tại thác Fishtail xinh đẹp gần đền Chin Swee,\nmang lại kết thúc hoàn hảo cho một trải nghiệm rừng mưa khó quên.\n\n16\n00:01:13.154 --> 00:01:16.448\nHãy đến khám phá, học hỏi, và kết nối lại với thiên nhiên tại Clearwater Way.\n", "zh": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:06.120\n欢迎来到 Clearwater Way,这是一条独特的6公里往返自然步道,\n坐落在云顶高原郁郁葱葱的雨林之中。\n\n2\n00:00:06.951 --> 00:00:14.283\n每天上午9点开放,这段向导之旅大约需要60至120分钟,\n为游客带来难忘的体验。\n\n3\n00:00:14.836 --> 00:00:22.667\n旅程从最初600米的铺装步道开始,沿途设有信息牌,\n护林员会讲解介绍这里迷人的野生动物、\n\n4\n00:00:22.996 --> 00:00:25.318\n植物和雨林生态系统。\n\n5\n00:00:26.137 --> 00:00:29.940\n这条步道兼具教育性与放松感,适合各年龄层的游客。\n\n6\n00:00:30.766 --> 00:00:35.466\n继续前行,步行与观光车相结合,\n带您深入探索大自然。\n\n7\n00:00:36.291 --> 00:00:43.083\n沿途您将经过护林站、观赏野生动物的热点、\n生态恢复种植区,以及美丽的娃娃谷生态园。\n\n8\n00:00:43.908 --> 00:00:46.773\nClearwater Way 是超过150种鸟类的栖息地,\n\n9\n00:00:47.075 --> 00:00:48.794\n是观鸟爱好者的天堂。\n\n10\n00:00:49.612 --> 00:00:52.756\n您也可能看到猴子、猿类和其他雨林野生动物。\n\n11\n00:00:53.693 --> 00:00:55.491\n由于这里是没有动物园的天然环境,\n\n12\n00:00:55.797 --> 00:00:57.422\n每一次邂逅都是一份特别的惊喜。\n\n13\n00:00:58.252 --> 00:01:00.437\n四周环绕着清新的山间空气与茂密的绿意,\n\n14\n00:01:00.768 --> 00:01:04.719\n步道在带来宁静休憩的同时,也倡导人们欣赏与保护大自然。\n\n15\n00:01:05.520 --> 00:01:12.332\n旅程的终点是靠近清水岩庙的美丽鱼尾瀑布,\n为这段难忘的雨林体验画上完美句点。\n\n16\n00:01:13.154 --> 00:01:16.448\n来 Clearwater Way,探索、学习,重新亲近大自然。\n"};
+  const LANG_LABELS = {en:'English', zh:'中文', hi:'हिन्दी', es:'Español', fr:'Français', ar:'العربية', ru:'Русский', ja:'日本語', de:'Deutsch', ko:'한국어', vi:'Tiếng Việt', th:'ไทย', id:'Bahasa Indonesia', ms:'Bahasa Malaysia', ta:'தமிழ்'};
+
+  const modal = document.getElementById('videoModal');
+  const video = document.getElementById('trailVideo');
+  let tracksBuilt = false;
+
+  function buildTracks(){
+    if(tracksBuilt) return;
+    Object.keys(VTT_DATA).forEach(code => {
+      const blob = new Blob([VTT_DATA[code]], {type:'text/vtt'});
+      const url = URL.createObjectURL(blob);
+      const track = document.createElement('track');
+      track.kind = 'subtitles';
+      track.srclang = code;
+      track.label = LANG_LABELS[code] || code;
+      track.src = url;
+      video.appendChild(track);
+    });
+    tracksBuilt = true;
+  }
+
+  function setLanguage(code){
+    for(const track of video.textTracks){
+      track.mode = (code !== 'off' && track.language === code) ? 'showing' : 'disabled';
+    }
+  }
+
+  function openVideo(){
+    buildTracks();
+    modal.classList.add('open');
+    video.currentTime = 0;
+    video.play().catch(()=>{});
+    setTimeout(()=> setLanguage(document.getElementById('langSelect').value), 200);
+  }
+  function closeVideo(){
+    modal.classList.remove('open');
+    video.pause();
+  }
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeVideo(); });
+</script>
+
+</body>
+</html>
